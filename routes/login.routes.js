@@ -3,6 +3,7 @@ import { connection } from "../db.js"
 import { validateDataMiddleware } from "../middleware/validateData.middleware.js"
 import { createLoginSchema } from "../schemas/login.schemas.js"
 import jwt from "jsonwebtoken"
+import {compare} from "bcryptjs"
 export const loginRoutes = Router()
 
 loginRoutes.post("",validateDataMiddleware(createLoginSchema), async (req,res)=>{
@@ -17,9 +18,9 @@ loginRoutes.post("",validateDataMiddleware(createLoginSchema), async (req,res)=>
     
     const userDb = await connection.query(text,values)
     const user = userDb.rows[0]
-    const descrypt = atob(user.password)
-   
-    if(descrypt === req.body.password){
+    const descrypt = await compare(req.body.password,user.password)
+   console.log(descrypt,"decrypt")
+    if(descrypt){
         const token = jwt.sign({
             id:user.id,
             email:user.email
