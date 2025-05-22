@@ -2,7 +2,7 @@ import {Router} from "express"
 import { connection } from "../db.js"
 import { validateDataMiddleware } from "../middleware/validateData.middleware.js"
 import { createLoginSchema } from "../schemas/login.schemas.js"
-import crypto from "node:crypto"
+import jwt from "jsonwebtoken"
 export const loginRoutes = Router()
 
 loginRoutes.post("",validateDataMiddleware(createLoginSchema), async (req,res)=>{
@@ -20,8 +20,17 @@ loginRoutes.post("",validateDataMiddleware(createLoginSchema), async (req,res)=>
     const descrypt = atob(user.password)
    
     if(descrypt === req.body.password){
-        return res.status(201).json(user)
-        
+        const token = jwt.sign({
+            id:user.id,
+            email:user.email
+        },
+        process.env.secret_key,
+        {
+            expiresIn:"24h",
+            subject:String(user.id)
+        }
+    )
+        return res.status(201).json({...user,token})
     }
     return res.status(403).json({message:"E-mail ou senha inválidos"})
 })

@@ -7,4 +7,3 @@ export const returnUsuario =[
 export const updateUsuarioSchema = [
     "name","password"
 ]
-

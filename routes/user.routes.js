@@ -2,7 +2,7 @@ import {Router} from "express"
 import { connection } from "../db.js"
 import { createUsuario, returnUsuario, updateUsuarioSchema } from "../schemas/usuario.schemas.js"
 import { validateDataMiddleware } from "../middleware/validateData.middleware.js"
-
+import jwt from "jsonwebtoken"
 const dadosUsuario = [
     "name","email","password"
 ]
@@ -49,24 +49,7 @@ userRoutes.post("",validateDataMiddleware(createUsuario), async(req,res)=>{
     }
     return res.status(201).json(returnUser)
 })
-userRoutes.get("/:id",async (req,res)=>{
-    const text = 'select * from usuarios where id = $1'
-    const values = [req.params.id]
-    const findUser = await connection.query(text,values)
-    console.log(findUser,"findUSer")
-    if(findUser.rows.length === 0){
-       return res.status(404).json({message:"Usuário não encontrado"})
-    }
-    const user = findUser.rows[0]
-    const obj = {}
-    for(const key in user){
-        if(returnUsuario.includes(key)){
-            obj[key] = user[key]
-        }
-    }
-    return res.status(200).json(obj)
-    
-})
+
 userRoutes.delete("/:id",async (req,res)=>{
     const text = 'select * from usuarios where id = $1'
     const values = [req.params.id]
@@ -106,4 +89,34 @@ userRoutes.patch("/:id",validateDataMiddleware(updateUsuarioSchema), async (req,
         }
     }
     return res.status(200).json(objUpdate)
+})
+userRoutes.get("/retrieve",(req,res)=>{
+    // console.log(req.headers.authorization)
+    const token = req.headers.authorization.split(" ")[1]
+    // console.log(token,"token")
+    jwt.verify(token,process.env.secret_key,(erro,decoded)=>{
+        console.log(decoded,"decoded")
+        if(erro){
+            return res.status(401).json({message:"token inválido"})
+        }
+        return res.status(200).json({...decoded})
+    })
+})
+userRoutes.get("/:id",async (req,res)=>{
+    const text = 'select * from usuarios where id = $1'
+    const values = [req.params.id]
+    const findUser = await connection.query(text,values)
+    console.log(findUser,"findUSer")
+    if(findUser.rows.length === 0){
+       return res.status(404).json({message:"Usuário não encontrado"})
+    }
+    const user = findUser.rows[0]
+    const obj = {}
+    for(const key in user){
+        if(returnUsuario.includes(key)){
+            obj[key] = user[key]
+        }
+    }
+    return res.status(200).json(obj)
+    
 })

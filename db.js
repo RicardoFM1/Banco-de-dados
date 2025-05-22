@@ -12,3 +12,6 @@ await connection.connect().then((res)=>{
     console.log("database connected")
 })
 
+export const database = {
+    users:[]
+}
