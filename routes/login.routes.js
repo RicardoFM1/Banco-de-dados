@@ -35,5 +35,3 @@ loginRoutes.post("",validateDataMiddleware(createLoginSchema), async (req,res)=>
     }
     return res.status(403).json({message:"E-mail ou senha inválidos"})
 })
-// fazer um tratamento de erro pra se tiver um email igual já igual o de cima, criando um código de http novo
-// nesse post
